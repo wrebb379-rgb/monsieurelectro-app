@@ -1,0 +1,62 @@
+export function parseGoDaddy(raw, regles = []) {
+  const line = (label) => {
+    const re = new RegExp(label + '[:\\s]+(.+)', 'i')
+    const m = raw.match(re)
+    return m ? m[1].trim() : ''
+  }
+
+  const nom = line('Nom')
+  const prenom = nom.split(' ')[0] || nom
+  const adresse = line('Adresse complète') || line('Adresse')
+  const ville = line('Ville')
+  const tel = line('téléphone') || line('Téléphone') || line('Phone')
+  const email = line('Email') || line('Courriel')
+  const marqueRaw = line('Marque et numéro de modèle') || line('Marque')
+
+  const description = (() => {
+    const re = /Description du problème[^]*?\n([\s\S]+?)(?=Pièces jointes|Périphérique|Langue|Envoyé|$)/i
+    const m = raw.match(re)
+    return m ? m[1].trim() : ''
+  })()
+
+  const pieceJointe = (() => {
+    const re = /\b(\w+\.(jpg|jpeg|png|gif|mp4|mov|avi|webm|pdf))\b/gi
+    return [...raw.matchAll(re)].map(m => m[0])
+  })()
+
+  const cp = adresse.match(/[GHJ]\d[A-Z]\s?\d[A-Z]\d/i)?.[0]?.substring(0, 3).toUpperCase() || ''
+
+  const marque = detectMarque(marqueRaw, regles)
+  const appareil = detectAppareil(marqueRaw + ' ' + description)
+
+  return { nom, prenom, adresse, ville, cp, tel, email, marqueRaw, marque, appareil, description, pieceJointe }
+}
+
+function detectMarque(txt, regles) {
+  const t = txt.toLowerCase()
+  for (const r of regles) {
+    if (t.includes(r.m.toLowerCase())) return r.m
+  }
+  const synonymes = {
+    frigidaire: 'Frigidaire', whirlpool: 'Whirlpool', samsung: 'Samsung',
+    lg: 'LG', maytag: 'Maytag', bosch: 'Bosch',
+    electrolux: 'Électrolux', électrolux: 'Électrolux',
+    amana: 'Amana', 'speed queen': 'Speed Queen', ge: 'GE'
+  }
+  for (const [k, v] of Object.entries(synonymes)) {
+    if (t.includes(k)) return v
+  }
+  return ''
+}
+
+function detectAppareil(txt) {
+  const t = txt.toLowerCase()
+  if (t.includes('lave-vaisselle') || t.includes('lavevaisselle') || t.includes('dishwasher')) return 'Lave-vaisselle'
+  if (t.includes('laveuse') || t.includes('washer')) return 'Laveuse'
+  if (t.includes('sécheuse') || t.includes('secheuse') || t.includes('dryer')) return 'Sécheuse'
+  if (t.includes('réfrigérateur') || t.includes('frigo') || t.includes('fridge')) return 'Réfrigérateur'
+  if (t.includes('congélateur') || t.includes('freezer')) return 'Congélateur'
+  if (t.includes('cuisinière') || t.includes('poêle') || t.includes('stove')) return 'Cuisinière'
+  if (t.includes('micro-onde') || t.includes('microwave')) return 'Micro-ondes'
+  return ''
+}
