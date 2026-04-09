@@ -15,7 +15,6 @@ export function parseGoDaddy(raw, regles = []) {
     return m ? m[1].trim() : ''
   }
 
-  // ✅ NOUVEAU : champ sur la même ligne (label + valeur collés)
   function champLigne(label) {
     const re = new RegExp(
       '(?:^|\\n)' + label + '[ \\t]+([^\\n]{1,300})',
@@ -40,26 +39,29 @@ export function parseGoDaddy(raw, regles = []) {
     return contenu.trim()
   }
 
+  const nom = (champ('Nom') || champLigne('Nom') || '').trim()
+
+  // ✅ CORRIGÉ : prenom calculé ici
   const prenomBrut = nom.split(' ')[0] || 'Client'
-const prenom = prenomBrut.charAt(0).toUpperCase() + prenomBrut.slice(1).toLowerCase()
+  const prenom = prenomBrut.charAt(0).toUpperCase() + prenomBrut.slice(1).toLowerCase()
 
-const adresse = (champ('Adresse compl.+te') || champLigne('Adresse compl.+te') ||
-                champ('Adresse') || champLigne('Adresse') || '').trim()
+  const adresse = (champ('Adresse compl.+te') || champLigne('Adresse compl.+te') ||
+                  champ('Adresse') || champLigne('Adresse') || '').trim()
 
-const ville = (champ('Ville') || champLigne('Ville') || '').trim()
+  const ville = (champ('Ville') || champLigne('Ville') || '').trim()
 
-const tel = (champ('Votre t.+l.+phone') || champLigne('Votre t.+l.+phone') ||
-            champ('T.+l.+phone') || champLigne('T.+l.+phone') || '').trim()
+  const tel = (champ('Votre t.+l.+phone') || champLigne('Votre t.+l.+phone') ||
+              champ('T.+l.+phone') || champLigne('T.+l.+phone') || '').trim()
 
-const email = (champ('Email') || champLigne('Email') ||
-              champ('Courriel') || champLigne('Courriel') || '').trim()
+  const email = (champ('Email') || champLigne('Email') ||
+                champ('Courriel') || champLigne('Courriel') || '').trim()
 
-  const marqueRaw = champ('Marque et num.+ro de mod.+le de l\'appareil') ||
+  const marqueRaw = (champ('Marque et num.+ro de mod.+le de l\'appareil') ||
                     champLigne('Marque et num.+ro de mod.+le de l\'appareil') ||
                     champ('Marque et num.+ro de mod.+le') ||
                     champLigne('Marque et num.+ro de mod.+le') ||
                     champ('Marque et mod.+le') || champLigne('Marque et mod.+le') ||
-                    champ('Marque') || champLigne('Marque') || ''
+                    champ('Marque') || champLigne('Marque') || '').trim()
 
   const description = bloc(
     'Description du probl.+me[^\\n]*',
@@ -81,6 +83,7 @@ const email = (champ('Email') || champLigne('Email') ||
   const marque = detectMarque(marqueRaw + ' ' + description, regles)
   const appareil = detectAppareil(marqueRaw + ' ' + description)
 
+  // ✅ CORRIGÉ : prenom inclus dans le return
   return { nom, prenom, adresse, ville, cp, tel, email, marqueRaw, marque, appareil, description, pieceJointe }
 }
 
