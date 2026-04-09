@@ -40,24 +40,19 @@ export function parseGoDaddy(raw, regles = []) {
     return contenu.trim()
   }
 
-  const nom = champ('Nom') || champLigne('Nom') || ''
   const prenomBrut = nom.split(' ')[0] || 'Client'
-  const prenom = prenomBrut.charAt(0).toUpperCase() + prenomBrut.slice(1).toLowerCase()
+const prenom = prenomBrut.charAt(0).toUpperCase() + prenomBrut.slice(1).toLowerCase()
 
-  const adresse = champ('Adresse compl.+te') || champLigne('Adresse compl.+te') ||
-                  champ('Adresse') || champLigne('Adresse') || ''
+const adresse = (champ('Adresse compl.+te') || champLigne('Adresse compl.+te') ||
+                champ('Adresse') || champLigne('Adresse') || '').trim()
 
-  const ville = champ('Ville') || champLigne('Ville') || ''
+const ville = (champ('Ville') || champLigne('Ville') || '').trim()
 
-  // ✅ CORRIGÉ : toutes les variantes de "téléphone" avec/sans accent
-  const tel = champ('Votre t.+l.+phone') || champLigne('Votre t.+l.+phone') ||
-              champ('T.+l.+phone') || champLigne('T.+l.+phone') ||
-              champ('Phone') || champLigne('Phone') || ''
+const tel = (champ('Votre t.+l.+phone') || champLigne('Votre t.+l.+phone') ||
+            champ('T.+l.+phone') || champLigne('T.+l.+phone') || '').trim()
 
-  // ✅ CORRIGÉ : email du client dans le corps, pas l'expéditeur GoDaddy
-  const email = champ('Email') || champLigne('Email') ||
-                champ('Courriel') || champLigne('Courriel') ||
-                champ('E-mail') || champLigne('E-mail') || ''
+const email = (champ('Email') || champLigne('Email') ||
+              champ('Courriel') || champLigne('Courriel') || '').trim()
 
   const marqueRaw = champ('Marque et num.+ro de mod.+le de l\'appareil') ||
                     champLigne('Marque et num.+ro de mod.+le de l\'appareil') ||
