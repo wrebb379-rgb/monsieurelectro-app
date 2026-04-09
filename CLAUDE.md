@@ -8,8 +8,11 @@
 | Code source (GitHub) | https://github.com/wrebb379-rgb/monsieurelectro-app |
 | Google Calendar | wrebb379@gmail.com |
 | Vercel compte | jean17 |
+| Outlook business | infos@monsieurelectro.com |
+| Azure App ID | 9445d18c-ef16-479a-be00-0846553b5dba |
+| Azure Tenant ID | ae72419d-0db1-49d0-8cea-95622e0cc016 |
 
-> ⚠️ Le lien permanent à utiliser est le `-git-main-` — l'ancien lien `p5n3705g0` est un snapshot figé.
+> ⚠️ Toujours utiliser le lien `-git-main-` pour Vercel — l'ancien lien `p5n3705g0` est un snapshot figé.
 
 ---
 
@@ -24,11 +27,9 @@ Puis ouvre http://localhost:5173
 
 **Déployer une mise à jour :**
 ```
-git add . ; git commit -m "description du changement" ; git push
+git add . ; git commit -m "description" ; git push
 ```
-Vercel redéploie automatiquement en moins de 1 minute!
-
-> ⚠️ Toujours vérifier que le terminal affiche `C:\Users\wrebb\monsieurelectro-app>` avant de taper git. Si tu vois juste `C:\Users\wrebb>`, tape d'abord `cd monsieurelectro-app`.
+> ⚠️ Toujours vérifier que le terminal affiche `C:\Users\wrebb\monsieurelectro-app>` avant de taper git.
 
 ---
 
@@ -40,8 +41,8 @@ Vercel redéploie automatiquement en moins de 1 minute!
 | Hébergement | Vercel | ✅ En ligne |
 | Base de données | Supabase | 🔜 À connecter |
 | Google Agenda | Google Calendar API | ✅ Connecté (lecture) |
-| Courriels entrants | Microsoft Graph API (Outlook) | 🔜 À connecter |
-| Envoi de courriels | Gmail API ou SMTP | 🔜 À connecter |
+| Courriels entrants | Microsoft Graph API (Outlook) | ✅ Connecté (lecture seule) |
+| Envoi de courriels | À faire | 🔜 À connecter |
 
 ---
 
@@ -53,22 +54,24 @@ C:\Users\wrebb\monsieurelectro-app\
 ├── package.json
 ├── vite.config.js
 ├── src/
-│   ├── App.jsx          ← navigation + topbar dorée
-│   ├── App.css          ← design global (couleur #E8A800)
+│   ├── App.jsx              ← navigation + topbar dorée
+│   ├── App.css              ← design global (#E8A800)
 │   ├── main.jsx
+│   ├── authConfig.js        ← config Azure/MSAL
+│   ├── useOutlook.js        ← hook connexion Outlook (lecture)
 │   ├── pages/
-│   │   ├── Courriels.jsx    ← tableau de bord principal
+│   │   ├── Courriels.jsx    ← tableau de bord + vrais courriels Outlook
 │   │   ├── Calendrier.jsx   ← agenda + prochain RDV
 │   │   ├── Regles.jsx       ← grille marque × appareil
 │   │   ├── Region.jsx       ← villes et codes postaux
 │   │   └── Phrases.jsx      ← textes de réponse
 │   ├── utils/
 │   │   ├── classifier.js    ← logique vert/jaune/rouge
-│   │   └── parseGoDaddy.js  ← extraction champs courriel
+│   │   └── parseGoDaddy.js  ← extraction champs courriel GoDaddy
 │   └── data/
-│       ├── regles.js        ← grille marque × appareil
-│       ├── regions.js       ← villes/codes postaux
-│       └── phrases.js       ← textes de réponse
+│       ├── regles.js
+│       ├── regions.js
+│       └── phrases.js
 └── public/
 ```
 
@@ -76,47 +79,67 @@ C:\Users\wrebb\monsieurelectro-app\
 
 ## Design system
 
-- **Couleur principale** : #E8A800 (doré/jaune)
+- **Couleur principale** : #E8A800 (doré/jaune) — topbar, accents
 - **Vert** : #2E7D32 (probable, confirmé)
 - **Rouge** : #C62828 (refus, hors secteur)
 - **Fond** : #F5F5F5
-- **Cartes** : blanc avec border-radius 12px, ombre légère
-- **Topbar** : fond doré #E8A800, onglets blancs, hover vert
-- **Bordures** : 1px solid #ddd (légères)
+- **Cartes** : blanc, border-radius 12px, ombre légère, border 1px #ddd
 - **Séparateur sidebar/panel** : barre dorée 3px verticale
+- **Onglets actifs** : blanc avec underline blanc, hover vert
 
 ---
 
 ## Fonctionnalités complétées ✅
 
+**Connexion Outlook (lecture seule) :**
+- Bouton bleu "📧 Connecter Outlook" dans la page Courriels
+- Connexion via Microsoft Graph API (Azure App ID configuré)
+- Filtre automatique : seulement les courriels avec "Monsieur Electro Services Inc. a reçu un nouveau message"
+- Exclut les replies (Re:, Rép:)
+- stripHtml() pour nettoyer le HTML des courriels
+- bodyTexte propre passé à parseGoDaddy
+
 **Page Courriels :**
-- Sidebar avec cases fixes (height 90px), bordure légère, scroll
-- Barre de recherche pour filtrer les clients
-- Compteur de clients
+- Sidebar cases fixes (height 90px) avec scroll, bordure légère
+- Barre de recherche + compteur de clients
 - Séparateur visuel doré entre sidebar et panel
-- Entête client compact : trait doré à gauche, nom + badge sur une ligne, infos sur une ligne
-- Infos appareil en chips (Marque, Appareil, Ville, Tél)
-- Zone description avec pièce jointe et analyse colorée
-- Zone réponse : bouton suggéré séparé + tous les boutons disponibles
-- Aperçu du message avec bouton Envoyer
-- Simulateur GoDaddy — colle un courriel brut, l'app l'analyse
+- Entête client compact : trait doré gauche, nom + badge sur une ligne
+- Infos appareil en chips
+- Zone description + pièces jointes + analyse colorée
+- Bouton suggéré + tous les boutons disponibles
+- Simulateur GoDaddy (colle un courriel brut)
+- Données fictives si Outlook non connecté
+
+**parseGoDaddy.js — format réel GoDaddy :**
+```
+Monsieur Electro Services Inc. a reçu un nouveau message.
+Nom Julie Villeneuve
+Adresse complète 4776 Avenue de la Villa St Vincent
+Ville Quebec City
+Votre téléphone 581-983-3530
+Email Johnsysliver@yahoo.com
+Marque et numéro de modèle de l'appareil Kenmore 665.13769K601
+Description du problème. ...
+Pièces jointes ...
+Périphérique mobile
+Langue fr-CA
+Envoyé depuis Page d'accueil
+```
 
 **Page Calendrier :**
 - Connecté au vrai Google Agenda (wrebb379@gmail.com)
-- Données réelles affichées (7, 8, 9, 10, 13, 15 avril 2026)
 - Calcul automatique du prochain RDV disponible
 - Max RDV/jour configurable (défaut: 6)
 - Blocage de journées
-- Vue mois et semaine
 
 **Pages Règles, Région, Phrases :**
 - Grille marque × appareil modifiable
-- Liste villes/codes postaux avec ajout/suppression
+- Villes/codes postaux avec ajout/suppression
 - Phrases modifiables avec {prenom} dynamique
 
 ---
 
-## Règles de réparation actuelles
+## Règles de réparation
 
 | Marque | Laveuse | Sécheuse | Frigo | Congélo | Lave-vaisselle | Cuisinière |
 |---|---|---|---|---|---|---|
@@ -130,14 +153,15 @@ C:\Users\wrebb\monsieurelectro-app\
 | Speed Queen | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
 | Samsung | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
 | LG | ✅ frontale seul. | ✅ frontale seul. | ❌ | ❌ | ❌ | ❌ |
+| Kenmore | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 ---
 
-## Phrases types actuelles
+## Phrases types
 
-- **Hors secteur** : "Bonjour {prenom}, Merci de m'avoir contacté. Malheureusement, votre adresse se situe en dehors de ma zone de service. Je vous suggère Tanguay, Léon, Corbeil ou Canadian Appliance Source..."
-- **Je prends le dossier** : RDV disponible + tarifs 89,95$ déplacement + 80$ réparation
-- **Marque non couverte** : refus poli avec bonne chance
+- **Hors secteur** : Suggère Tanguay, Léon, Corbeil, Canadian Appliance Source
+- **Je prends le dossier** : RDV + tarifs 89,95$ déplacement + 80$ réparation
+- **Marque non couverte** : refus poli
 - **Appareil non réparé** : liste des appareils couverts
 - **Demander plus d'info** : modèle, code postal, description
 
@@ -148,20 +172,35 @@ C:\Users\wrebb\monsieurelectro-app\
 - **Entreprise** : Monsieur Électro Services Inc.
 - **Propriétaire** : Jean (solo)
 - **Région** : Québec et environs
-- **Tarifs** : Déplacement/diagnostic 89,95 $ · Réparation 80 $ supp. · Pièces et taxes en sus
+- **Tarifs** : Déplacement/diagnostic 89,95 $ · Réparation 80 $ supp.
 - **Paiements** : Débit, chèque, virement Interac, argent comptant
+- **Courriel business** : infos@monsieurelectro.com (Outlook/Exchange GoDaddy)
+
+---
+
+## Azure / Microsoft Graph — Configuration
+
+- **App name** : MonsieurElectro
+- **Client ID** : 9445d18c-ef16-479a-be00-0846553b5dba
+- **Tenant ID** : ae72419d-0db1-49d0-8cea-95622e0cc016
+- **Redirect URIs** :
+  - http://localhost:5173
+  - https://monsieurelectro-app-git-main-jean17.vercel.app
+- **Permissions** : User.Read, Mail.Read (déléguées)
+- **Type** : Application monopage (SPA)
+- **Mode connexion** : loginRedirect (pas loginPopup)
 
 ---
 
 ## Prochaines étapes 🔜
 
-1. **Connecter Outlook** — lire les vrais courriels entrants automatiquement
-2. **Date dynamique** — prochain RDV réel inséré dans les réponses via Google Agenda
-3. **Supabase** — sauvegarder règles, phrases, historique des réponses entre sessions
-4. **Envoyer courriels** — bouton Envoyer qui envoie vraiment via Outlook
-5. **Historique client** — voir les échanges passés quand un client réécrit
+1. **Améliorer le parsing** — tester avec plus de vrais courriels, ajuster les regex
+2. **Supabase** — sauvegarder règles/phrases entre sessions
+3. **Envoyer courriels** — bouton Envoyer via Outlook (Microsoft Graph)
+4. **Historique** — voir les échanges passés quand un client réécrit
+5. **Kenmore** — ajouter dans la grille des règles (marque fréquente)
 
 ---
 
-*Dernière mise à jour : 8 avril 2026*
-*Session complète : maquettes → code React → GitHub → Vercel → design professionnel*
+*Dernière mise à jour : 8 avril 2026 — soir*
+*Session : maquettes → React → GitHub → Vercel → design → Outlook connecté*
