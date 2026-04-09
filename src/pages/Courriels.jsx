@@ -30,6 +30,7 @@ export default function Courriels() {
   const [rawEmail, setRawEmail] = useState('')
   const [simResult, setSimResult] = useState(null)
   const [showSim, setShowSim] = useState(false)
+  const [search, setSearch] = useState('')
 
   const regles = reglesDefaut
   const regions = regionsDefaut
@@ -47,22 +48,23 @@ export default function Courriels() {
     setSimResult({ ...parsed, cl: cl2, phrase: fillPrenom(phrases[cl2.phraseKey], parsed.prenom) })
   }
 
-  const badgeStyle = (code) => ({
-    fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 20,
-    background: code==='green' ? '#E8F5E9' : code==='yellow' ? '#FFF8E1' : '#FFEBEE',
-    color: code==='green' ? '#2E7D32' : code==='yellow' ? '#E65100' : '#C62828',
-  })
+  const emailsFiltres = emailsDemo.filter(e =>
+    `${e.prenom} ${e.nom} ${e.marque} ${e.appareil} ${e.ville}`
+      .toLowerCase().includes(search.toLowerCase())
+  )
 
   return (
     <div>
 
-      {/* Titre + bouton simulateur */}
+      {/* Titre + simulateur */}
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20 }}>
-        <h2 style={{ fontSize:22, fontWeight:800, color:'#1a1a1a' }}>Courriels clients</h2>
-        <button
-          onClick={() => setShowSim(!showSim)}
-          style={{ fontSize:13, fontWeight:600, padding:'9px 18px', borderRadius:8, border:'2px solid #E8A800', background: showSim ? '#E8A800' : '#fff', color: showSim ? '#fff' : '#E8A800', cursor:'pointer' }}>
-          {showSim ? '✕ Fermer le simulateur' : '🧪 Tester un courriel GoDaddy'}
+        <h2 style={{ fontSize:22, fontWeight:800 }}>Courriels clients</h2>
+        <button onClick={() => setShowSim(!showSim)} style={{
+          fontSize:13, fontWeight:600, padding:'9px 18px', borderRadius:8,
+          border:'2px solid #E8A800', background: showSim ? '#E8A800' : '#fff',
+          color: showSim ? '#fff' : '#E8A800', cursor:'pointer'
+        }}>
+          {showSim ? '✕ Fermer' : '🧪 Tester un courriel GoDaddy'}
         </button>
       </div>
 
@@ -76,9 +78,11 @@ export default function Courriels() {
           <button className="btn btn-primary" onClick={simulate}>Analyser</button>
           {simResult && (
             <div style={{ marginTop:14, padding:14, background:'#F9F9F9', borderRadius:10, fontSize:12 }}>
-              <span style={badgeStyle(simResult.cl.code)}>{simResult.cl.label}</span>
-              <span style={{ marginLeft:10, fontWeight:700 }}>{simResult.nom}</span>
-              <span style={{ color:'#666' }}> — {simResult.marque} {simResult.appareil} — {simResult.ville}</span>
+              <span style={{
+                fontSize:11, fontWeight:700, padding:'3px 10px', borderRadius:20,
+                background: simResult.cl.code==='green' ? '#2E7D32' : '#C62828', color:'#fff', marginRight:8
+              }}>{simResult.cl.label}</span>
+              <strong>{simResult.nom}</strong> — {simResult.marque} {simResult.appareil} — {simResult.ville}
               <div style={{ marginTop:6, color:'#666' }}>{simResult.cl.reason}</div>
               <div style={{ marginTop:10, whiteSpace:'pre-wrap', background:'#fff', padding:12, borderRadius:8, border:'1px solid #E0E0E0', lineHeight:1.7 }}>
                 {simResult.phrase}
@@ -91,109 +95,124 @@ export default function Courriels() {
       {/* Layout principal */}
       <div style={{ display:'flex', gap:16 }}>
 
-        {/* Sidebar — liste des courriels */}
+        {/* Sidebar */}
         <div style={{ width:260, flexShrink:0, display:'flex', flexDirection:'column', gap:8 }}>
-          {emailsDemo.map(e => {
-            const c = classifier(e, regles, regions)
-            const isActive = e.id === activeId
-            return (
-              <div key={e.id}
-                onClick={() => { setActiveId(e.id); setPreview(null) }}
-                style={{
-                  background: isActive ? '#fff' : '#fff',
-                  border: isActive ? '2px solid #E8A800' : '2px solid transparent',
-                  borderRadius: 10,
-                  padding: '12px 14px',
-                  cursor: 'pointer',
-                  boxShadow: isActive ? '0 2px 12px rgba(232,168,0,0.2)' : '0 1px 4px rgba(0,0,0,0.08)',
-                  transition: 'all 0.15s',
-                }}>
-                <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:6 }}>
-                  <span style={badgeStyle(c.code)}>{c.label}</span>
-                  {e.pieceJointe.length > 0 && <span style={{ fontSize:13 }}>📎</span>}
+
+          {/* Compteur + recherche */}
+          <div style={{ background:'#fff', borderRadius:10, border:'1px solid #ddd', padding:'10px 12px', boxShadow:'0 1px 4px rgba(0,0,0,0.06)' }}>
+            <div style={{ fontSize:12, fontWeight:700, color:'#666', marginBottom:8 }}>
+              {emailsFiltres.length} client{emailsFiltres.length > 1 ? 's' : ''}
+            </div>
+            <input type="text" placeholder="🔍 Rechercher..."
+              value={search} onChange={e => setSearch(e.target.value)}
+              style={{ width:'100%', fontSize:12, padding:'7px 10px', borderRadius:8, border:'1px solid #ddd' }}
+            />
+          </div>
+
+          {/* Liste */}
+          <div style={{ display:'flex', flexDirection:'column', gap:8, maxHeight:'70vh', overflowY:'auto' }}>
+            {emailsFiltres.map(e => {
+              const c = classifier(e, regles, regions)
+              const isActive = e.id === activeId
+              return (
+                <div key={e.id}
+                  onClick={() => { setActiveId(e.id); setPreview(null) }}
+                  style={{
+                    height:90, flexShrink:0, background:'#fff',
+                    border: isActive ? '2px solid #E8A800' : '1px solid #ddd',
+                    borderRadius:10, padding:'10px 14px', cursor:'pointer',
+                    boxShadow: isActive ? '0 2px 12px rgba(232,168,0,0.2)' : '0 1px 4px rgba(0,0,0,0.06)',
+                    transition:'all 0.15s', overflow:'hidden',
+                  }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:5 }}>
+                    <span style={{
+                      fontSize:10, fontWeight:700, padding:'3px 8px', borderRadius:20,
+                      background: c.code==='green' ? '#2E7D32' : c.code==='yellow' ? '#E65100' : '#C62828',
+                      color:'#fff'
+                    }}>{c.label}</span>
+                    {e.pieceJointe.length > 0 && <span style={{ fontSize:11 }}>📎</span>}
+                  </div>
+                  <div style={{ fontSize:13, fontWeight:700, color:'#1a1a1a', marginBottom:2, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                    {e.prenom} {e.nom.split(' ').slice(-1)[0]}
+                  </div>
+                  <div style={{ fontSize:11, color:'#666', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                    {e.marque} · {e.appareil} · {e.ville}
+                  </div>
                 </div>
-                <div style={{ fontSize:14, fontWeight:700, color:'#1a1a1a', marginBottom:3 }}>
-                  {e.prenom} {e.nom.split(' ').slice(-1)[0]}
-                </div>
-                <div style={{ fontSize:12, color:'#666' }}>{e.marque} · {e.appareil}</div>
-                <div style={{ fontSize:11, color:'#aaa', marginTop:2 }}>{e.ville} · {e.time}</div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </div>
+
+        {/* Séparateur */}
+        <div style={{ width:3, background:'#E8A800', borderRadius:3, flexShrink:0 }} />
 
         {/* Panel principal */}
         <div style={{ flex:1, display:'flex', flexDirection:'column', gap:12 }}>
 
-          {/* Entête client */}
-          <div style={{ background:'#fff', borderRadius:12, overflow:'hidden', boxShadow:'0 1px 4px rgba(0,0,0,0.08)' }}>
-            <div style={{ background:'#E8A800', padding:'16px 20px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+          {/* Entête client compact */}
+          <div style={{ background:'#fff', borderRadius:12, border:'1px solid #ddd', boxShadow:'0 1px 4px rgba(0,0,0,0.08)', overflow:'hidden' }}>
+            <div style={{ padding:'12px 20px', display:'flex', alignItems:'center', justifyContent:'space-between', borderLeft:'5px solid #E8A800' }}>
               <div>
-                <div style={{ fontSize:18, fontWeight:800, color:'#fff', marginBottom:4 }}>
-                  {email.prenom} {email.nom}
+                <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:4 }}>
+                  <span style={{ fontSize:20, fontWeight:800, color:'#1a1a1a' }}>
+                    {email.prenom} {email.nom}
+                  </span>
+                  <span style={{
+                    fontSize:11, fontWeight:700, padding:'3px 10px', borderRadius:20,
+                    background: cl.code==='green' ? '#2E7D32' : '#C62828', color:'#fff'
+                  }}>{cl.label}</span>
                 </div>
-                <div style={{ fontSize:13, color:'rgba(255,255,255,0.85)', display:'flex', gap:16, flexWrap:'wrap' }}>
+                <div style={{ fontSize:12, color:'#666', display:'flex', gap:14, flexWrap:'wrap' }}>
                   <span>📧 {email.email}</span>
                   <span>📞 {email.tel}</span>
                   <span>📍 {email.ville}</span>
                   <span>🕐 {email.time}</span>
                 </div>
               </div>
-              <span style={{ ...badgeStyle(cl.code), fontSize:13, padding:'6px 16px', background:'rgba(255,255,255,0.25)', color:'#fff', border:'2px solid rgba(255,255,255,0.5)' }}>
-                {cl.label}
-              </span>
-            </div>
-
-            {/* Infos appareil */}
-            <div style={{ padding:'14px 20px', borderBottom:'1px solid #F5F5F5', display:'flex', gap:10, flexWrap:'wrap' }}>
-              {[['🔧 Marque', email.marque], ['🏠 Appareil', email.appareil], ['📍 Ville', email.ville], ['📞 Tél', email.tel]].map(([k,v]) => (
-                <div key={k} style={{ background:'#F5F5F5', borderRadius:8, padding:'6px 12px' }}>
-                  <div style={{ fontSize:10, color:'#999', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.5px' }}>{k}</div>
-                  <div style={{ fontSize:13, fontWeight:700, color:'#1a1a1a' }}>{v}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* Description */}
-            <div style={{ padding:'14px 20px' }}>
-              <div style={{ fontSize:11, color:'#aaa', fontWeight:600, marginBottom:4, textTransform:'uppercase', letterSpacing:'0.5px' }}>
-                Modèle : {email.marqueRaw}
-              </div>
-              <div style={{ fontSize:14, color:'#333', lineHeight:1.7 }}>
-                {email.description}
-              </div>
-
-              {/* Pièces jointes */}
-              {email.pieceJointe.map(f => (
-                <div key={f} style={{ display:'flex', alignItems:'center', gap:12, marginTop:10, padding:'10px 14px', background:'#F9F9F9', borderRadius:8, border:'1px solid #E0E0E0' }}>
-                  <span style={{ fontSize:24 }}>{fileIcon(f)}</span>
-                  <div>
-                    <div style={{ fontSize:13, fontWeight:700 }}>{f}</div>
-                    <div style={{ fontSize:11, color:'#aaa' }}>Pièce jointe</div>
-                  </div>
-                </div>
-              ))}
-
-              {/* Analyse */}
-              <div style={{
-                marginTop:12, padding:'10px 14px', borderRadius:8, fontSize:13, fontWeight:500,
-                background: cl.code==='green' ? '#E8F5E9' : cl.code==='yellow' ? '#FFF8E1' : '#FFEBEE',
-                color: cl.code==='green' ? '#2E7D32' : cl.code==='yellow' ? '#E65100' : '#C62828',
-                borderLeft: `4px solid ${cl.code==='green' ? '#2E7D32' : cl.code==='yellow' ? '#E65100' : '#C62828'}`,
-              }}>
-                {cl.code==='green' ? '✅' : cl.code==='yellow' ? '⚠️' : '❌'} {cl.reason}
-              </div>
             </div>
           </div>
 
-          {/* Zone de réponse */}
-          <div style={{ background:'#fff', borderRadius:12, padding:'16px 20px', boxShadow:'0 1px 4px rgba(0,0,0,0.08)' }}>
-
-            {/* Suggéré */}
-            <div style={{ marginBottom:14, paddingBottom:14, borderBottom:'1px solid #F5F5F5' }}>
-              <div style={{ fontSize:11, fontWeight:700, color:'#E8A800', textTransform:'uppercase', letterSpacing:'0.5px', marginBottom:8 }}>
-                ★ Suggéré par tes règles
+          {/* Infos appareil */}
+          <div style={{ background:'#fff', borderRadius:12, border:'1px solid #ddd', boxShadow:'0 1px 4px rgba(0,0,0,0.08)', padding:'14px 20px', display:'flex', gap:10, flexWrap:'wrap' }}>
+            {[['🔧 Marque', email.marque],['🏠 Appareil', email.appareil],['📍 Ville', email.ville],['📞 Tél', email.tel]].map(([k,v]) => (
+              <div key={k} style={{ background:'#F5F5F5', borderRadius:8, padding:'6px 12px', border:'1px solid #E0E0E0' }}>
+                <div style={{ fontSize:10, color:'#999', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.5px' }}>{k}</div>
+                <div style={{ fontSize:13, fontWeight:700, color:'#1a1a1a' }}>{v}</div>
               </div>
+            ))}
+          </div>
+
+          {/* Description */}
+          <div style={{ background:'#fff', borderRadius:12, border:'1px solid #ddd', boxShadow:'0 1px 4px rgba(0,0,0,0.08)', height:220, overflowY:'auto', padding:'14px 20px' }}>
+            <div style={{ fontSize:11, color:'#aaa', fontWeight:600, marginBottom:6, textTransform:'uppercase', letterSpacing:'0.5px' }}>
+              Modèle : {email.marqueRaw}
+            </div>
+            <div style={{ fontSize:14, color:'#333', lineHeight:1.7 }}>{email.description}</div>
+            {email.pieceJointe.map(f => (
+              <div key={f} style={{ display:'flex', alignItems:'center', gap:12, marginTop:10, padding:'10px 14px', background:'#F9F9F9', borderRadius:8, border:'1px solid #E0E0E0' }}>
+                <span style={{ fontSize:24 }}>{fileIcon(f)}</span>
+                <div>
+                  <div style={{ fontSize:13, fontWeight:700 }}>{f}</div>
+                  <div style={{ fontSize:11, color:'#aaa' }}>Pièce jointe</div>
+                </div>
+              </div>
+            ))}
+            <div style={{
+              marginTop:12, padding:'10px 14px', borderRadius:8, fontSize:13, fontWeight:500,
+              background: cl.code==='green' ? '#E8F5E9' : cl.code==='yellow' ? '#FFF8E1' : '#FFEBEE',
+              color: cl.code==='green' ? '#2E7D32' : cl.code==='yellow' ? '#E65100' : '#C62828',
+              borderLeft: `4px solid ${cl.code==='green' ? '#2E7D32' : cl.code==='yellow' ? '#E65100' : '#C62828'}`,
+            }}>
+              {cl.code==='green' ? '✅' : cl.code==='yellow' ? '⚠️' : '❌'} {cl.reason}
+            </div>
+          </div>
+
+          {/* Zone réponse */}
+          <div style={{ background:'#fff', borderRadius:12, border:'1px solid #ddd', boxShadow:'0 1px 4px rgba(0,0,0,0.08)', padding:'16px 20px' }}>
+
+            <div style={{ marginBottom:14, paddingBottom:14, borderBottom:'1px solid #F5F5F5' }}>
+              <div style={{ fontSize:11, fontWeight:700, color:'#E8A800', textTransform:'uppercase', letterSpacing:'0.5px', marginBottom:8 }}>★ Suggéré par tes règles</div>
               <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
                 {cl.code==='green' && <button className="btn btn-primary" onClick={() => handlePreview('prendre')}>✓ Confirmer le RDV</button>}
                 {cl.code==='yellow' && <button className="btn btn-primary" onClick={() => handlePreview('prendre')}>✓ Je prends le dossier</button>}
@@ -203,11 +222,8 @@ export default function Courriels() {
               </div>
             </div>
 
-            {/* Toutes les réponses */}
             <div>
-              <div style={{ fontSize:11, fontWeight:700, color:'#999', textTransform:'uppercase', letterSpacing:'0.5px', marginBottom:8 }}>
-                Toutes les réponses disponibles
-              </div>
+              <div style={{ fontSize:11, fontWeight:700, color:'#999', textTransform:'uppercase', letterSpacing:'0.5px', marginBottom:8 }}>Toutes les réponses disponibles</div>
               <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
                 <button className="btn btn-primary" onClick={() => handlePreview('prendre')}>Je prends le dossier</button>
                 <button className="btn" onClick={() => handlePreview('info')}>Demander plus d'info</button>
@@ -217,19 +233,14 @@ export default function Courriels() {
               </div>
             </div>
 
-            {/* Aperçu de la réponse */}
             {preview && (
               <div style={{ marginTop:16, borderTop:'1px solid #F5F5F5', paddingTop:16 }}>
-                <div style={{ fontSize:11, fontWeight:700, color:'#999', textTransform:'uppercase', letterSpacing:'0.5px', marginBottom:8 }}>
-                  Aperçu du message
-                </div>
-                <div style={{ fontSize:13, whiteSpace:'pre-wrap', lineHeight:1.8, background:'#F9F9F9', padding:'14px 16px', borderRadius:8, border:'1px solid #E0E0E0', color:'#333' }}>
+                <div style={{ fontSize:11, fontWeight:700, color:'#999', textTransform:'uppercase', letterSpacing:'0.5px', marginBottom:8 }}>Aperçu du message</div>
+                <div style={{ fontSize:13, whiteSpace:'pre-wrap', lineHeight:1.8, background:'#F9F9F9', padding:'14px 16px', borderRadius:8, border:'1px solid #E0E0E0', color:'#333', marginBottom:12 }}>
                   {preview.text}
                 </div>
-                <div style={{ display:'flex', gap:10, marginTop:12 }}>
-                  <button className="btn btn-primary" onClick={() => alert('Envoie à ' + email.email)}>
-                    📤 Envoyer à {email.email}
-                  </button>
+                <div style={{ display:'flex', gap:10 }}>
+                  <button className="btn btn-primary" onClick={() => alert('Envoie à ' + email.email)}>📤 Envoyer à {email.email}</button>
                   <button className="btn" onClick={() => setPreview(null)}>Annuler</button>
                 </div>
               </div>

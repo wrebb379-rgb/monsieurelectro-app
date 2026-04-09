@@ -201,3 +201,28 @@ h2 {
   font-weight: 800;
   font-size: 15px;
 }
+.tab {
+  padding: 0 20px;
+  height: 60px;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.75);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  white-space: nowrap;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.tab:hover {
+  color: #2E7D32;
+  background: rgba(255,255,255,0.15);
+}
+
+.tab.active {
+  color: #ffffff;
+  border-bottom-color: #ffffff;
+  font-weight: 800;
+}
