@@ -5,6 +5,7 @@ export default function Formulaire() {
     prenom: '', nom: '', tel: '', email: '',
     adresse: '', ville: '', marque: '', appareil: '', modele: '', description: ''
   })
+  const [fichiers, setFichiers] = useState([])
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -12,6 +13,11 @@ export default function Formulaire() {
   function change(e) {
     setForm({ ...form, [e.target.name]: e.target.value })
     if (errors[e.target.name]) setErrors({ ...errors, [e.target.name]: false })
+  }
+
+  function changeFichier(e) {
+    const selected = Array.from(e.target.files)
+    setFichiers(selected)
   }
 
   function validate() {
@@ -33,7 +39,10 @@ export default function Formulaire() {
     if (!validate()) return
     setLoading(true)
 
-    const corps = `Monsieur Electro Services Inc. a reçu un nouveau message.
+    try {
+      const formData = new FormData()
+
+      const corps = `Monsieur Electro Services Inc. a reçu un nouveau message.
 Nom ${form.prenom} ${form.nom}
 Adresse complète ${form.adresse || 'Non fournie'}
 Ville ${form.ville}
@@ -43,16 +52,20 @@ Marque et numéro de modèle de l'appareil ${form.marque} ${form.appareil} Modè
 Description du problème. ${form.description}
 Envoyé depuis Formulaire site web`
 
-    try {
+      formData.append('message', corps)
+      formData.append('_replyto', form.email)
+      formData.append('_subject', 'Nouvelle demande - ' + form.marque + ' ' + form.appareil + ' - ' + form.prenom + ' ' + form.nom)
+
+      fichiers.forEach((f) => {
+        formData.append('fichier', f)
+      })
+
       const resp = await fetch('https://formspree.io/f/meepboaz', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify({
-          message: corps,
-          _replyto: form.email,
-          _subject: 'Nouvelle demande - ' + form.marque + ' ' + form.appareil + ' - ' + form.prenom + ' ' + form.nom
-        })
+        headers: { 'Accept': 'application/json' },
+        body: formData
       })
+
       if (resp.ok) {
         setSuccess(true)
       } else {
@@ -207,7 +220,6 @@ Envoyé depuis Formulaire site web`
               <option>Congélateur</option>
               <option>Lave-vaisselle</option>
               <option>Cuisinière</option>
-              <option>Micro-ondes</option>
             </select></>,
             'appareil'
           )}
@@ -229,6 +241,28 @@ Envoyé depuis Formulaire site web`
           /></>,
           'description'
         )}
+
+        {/* Upload photo/vidéo */}
+        <div style={{ marginBottom: 20 }}>
+          {label('Photo ou vidéo')}
+          <label style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            padding: '20px 14px', border: '2px dashed #BBDEFB', borderRadius: 8,
+            background: '#F8FBFF', cursor: 'pointer', textAlign: 'center', gap: 8
+          }}>
+            <span style={{ fontSize: 28 }}>📎</span>
+            <span style={{ fontSize: 13, color: '#1565C0', fontWeight: 600 }}>
+              {fichiers.length > 0
+                ? fichiers.map(f => f.name).join(', ')
+                : 'Cliquez pour ajouter une photo ou vidéo'}
+            </span>
+            <span style={{ fontSize: 11, color: '#999' }}>JPG, PNG, MP4, MOV — max 10 Mo</span>
+            <input
+              type="file" accept="image/*,video/*" multiple onChange={changeFichier}
+              style={{ display: 'none' }}
+            />
+          </label>
+        </div>
 
         <button
           type="submit" disabled={loading}
