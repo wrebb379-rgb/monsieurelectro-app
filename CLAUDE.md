@@ -4,17 +4,31 @@
 
 | Quoi | Adresse |
 |---|---|
-| App en ligne (Vercel) | https://monsieurelectro-p5n3705g0-jean17.vercel.app |
+| App en ligne (Vercel) | https://monsieurelectro-app-git-main-jean17.vercel.app |
 | Code source (GitHub) | https://github.com/wrebb379-rgb/monsieurelectro-app |
 | Google Calendar | wrebb379@gmail.com |
 | Vercel compte | jean17 |
 
+> ⚠️ Le lien permanent à utiliser est le `-git-main-` — l'ancien lien `p5n3705g0` est un snapshot figé.
+
 ---
 
-## Description du projet
+## Commandes utiles
 
-Application web de gestion des courriels clients pour **Monsieur Électro Services Inc.**,
-une entreprise solo de réparation d'électroménagers dans la région de Québec.
+**Démarrer en local :**
+```
+cd C:\Users\wrebb\monsieurelectro-app
+npm run dev
+```
+Puis ouvre http://localhost:5173
+
+**Déployer une mise à jour :**
+```
+git add . ; git commit -m "description du changement" ; git push
+```
+Vercel redéploie automatiquement en moins de 1 minute!
+
+> ⚠️ Toujours vérifier que le terminal affiche `C:\Users\wrebb\monsieurelectro-app>` avant de taper git. Si tu vois juste `C:\Users\wrebb>`, tape d'abord `cd monsieurelectro-app`.
 
 ---
 
@@ -39,53 +53,70 @@ C:\Users\wrebb\monsieurelectro-app\
 ├── package.json
 ├── vite.config.js
 ├── src/
-│   ├── App.jsx
-│   ├── App.css
+│   ├── App.jsx          ← navigation + topbar dorée
+│   ├── App.css          ← design global (couleur #E8A800)
 │   ├── main.jsx
 │   ├── pages/
-│   │   ├── Courriels.jsx
-│   │   ├── Calendrier.jsx
-│   │   ├── Regles.jsx
-│   │   ├── Region.jsx
-│   │   └── Phrases.jsx
+│   │   ├── Courriels.jsx    ← tableau de bord principal
+│   │   ├── Calendrier.jsx   ← agenda + prochain RDV
+│   │   ├── Regles.jsx       ← grille marque × appareil
+│   │   ├── Region.jsx       ← villes et codes postaux
+│   │   └── Phrases.jsx      ← textes de réponse
 │   ├── utils/
-│   │   ├── classifier.js
-│   │   └── parseGoDaddy.js
+│   │   ├── classifier.js    ← logique vert/jaune/rouge
+│   │   └── parseGoDaddy.js  ← extraction champs courriel
 │   └── data/
-│       ├── regles.js
-│       ├── regions.js
-│       └── phrases.js
+│       ├── regles.js        ← grille marque × appareil
+│       ├── regions.js       ← villes/codes postaux
+│       └── phrases.js       ← textes de réponse
 └── public/
 ```
 
 ---
 
+## Design system
+
+- **Couleur principale** : #E8A800 (doré/jaune)
+- **Vert** : #2E7D32 (probable, confirmé)
+- **Rouge** : #C62828 (refus, hors secteur)
+- **Fond** : #F5F5F5
+- **Cartes** : blanc avec border-radius 12px, ombre légère
+- **Topbar** : fond doré #E8A800, onglets blancs, hover vert
+- **Bordures** : 1px solid #ddd (légères)
+- **Séparateur sidebar/panel** : barre dorée 3px verticale
+
+---
+
 ## Fonctionnalités complétées ✅
 
-- Tableau de bord courriels avec classification vert/jaune/rouge
-- Fiche client complète avec pièces jointes
-- Simulateur GoDaddy — colle un courriel brut et l'app l'analyse
-- Grille marque × appareil modifiable case par case
-- Région couverte — villes et codes postaux
-- Phrases types modifiables avec {prenom} dynamique
-- Calendrier mensuel avec données réelles Google Agenda
+**Page Courriels :**
+- Sidebar avec cases fixes (height 90px), bordure légère, scroll
+- Barre de recherche pour filtrer les clients
+- Compteur de clients
+- Séparateur visuel doré entre sidebar et panel
+- Entête client compact : trait doré à gauche, nom + badge sur une ligne, infos sur une ligne
+- Infos appareil en chips (Marque, Appareil, Ville, Tél)
+- Zone description avec pièce jointe et analyse colorée
+- Zone réponse : bouton suggéré séparé + tous les boutons disponibles
+- Aperçu du message avec bouton Envoyer
+- Simulateur GoDaddy — colle un courriel brut, l'app l'analyse
+
+**Page Calendrier :**
+- Connecté au vrai Google Agenda (wrebb379@gmail.com)
+- Données réelles affichées (7, 8, 9, 10, 13, 15 avril 2026)
 - Calcul automatique du prochain RDV disponible
-- Blocage de journées (vacances, maladie)
 - Max RDV/jour configurable (défaut: 6)
-- App déployée sur Vercel — accessible partout
+- Blocage de journées
+- Vue mois et semaine
+
+**Pages Règles, Région, Phrases :**
+- Grille marque × appareil modifiable
+- Liste villes/codes postaux avec ajout/suppression
+- Phrases modifiables avec {prenom} dynamique
 
 ---
 
-## Prochaines étapes 🔜
-
-1. **Connecter Outlook** — lire les vrais courriels entrants
-2. **Date dynamique** — prochain RDV réel dans les réponses
-3. **Supabase** — sauvegarder les règles/phrases entre sessions
-4. **Envoyer courriels** — bouton Envoyer fonctionnel
-
----
-
-## Règles de réparation
+## Règles de réparation actuelles
 
 | Marque | Laveuse | Sécheuse | Frigo | Congélo | Lave-vaisselle | Cuisinière |
 |---|---|---|---|---|---|---|
@@ -102,6 +133,16 @@ C:\Users\wrebb\monsieurelectro-app\
 
 ---
 
+## Phrases types actuelles
+
+- **Hors secteur** : "Bonjour {prenom}, Merci de m'avoir contacté. Malheureusement, votre adresse se situe en dehors de ma zone de service. Je vous suggère Tanguay, Léon, Corbeil ou Canadian Appliance Source..."
+- **Je prends le dossier** : RDV disponible + tarifs 89,95$ déplacement + 80$ réparation
+- **Marque non couverte** : refus poli avec bonne chance
+- **Appareil non réparé** : liste des appareils couverts
+- **Demander plus d'info** : modèle, code postal, description
+
+---
+
 ## Informations business
 
 - **Entreprise** : Monsieur Électro Services Inc.
@@ -112,24 +153,15 @@ C:\Users\wrebb\monsieurelectro-app\
 
 ---
 
-## Commandes utiles
+## Prochaines étapes 🔜
 
-**Démarrer en local :**
-```
-cd C:\Users\wrebb\monsieurelectro-app
-npm run dev
-```
-Puis ouvre http://localhost:5174
-
-**Déployer une mise à jour :**
-```
-git add .
-git commit -m "description du changement"
-git push
-```
-Vercel redéploie automatiquement en moins de 1 minute!
+1. **Connecter Outlook** — lire les vrais courriels entrants automatiquement
+2. **Date dynamique** — prochain RDV réel inséré dans les réponses via Google Agenda
+3. **Supabase** — sauvegarder règles, phrases, historique des réponses entre sessions
+4. **Envoyer courriels** — bouton Envoyer qui envoie vraiment via Outlook
+5. **Historique client** — voir les échanges passés quand un client réécrit
 
 ---
 
-*Dernière mise à jour : 7 avril 2026*
-*App déployée et fonctionnelle sur Vercel*
+*Dernière mise à jour : 8 avril 2026*
+*Session complète : maquettes → code React → GitHub → Vercel → design professionnel*

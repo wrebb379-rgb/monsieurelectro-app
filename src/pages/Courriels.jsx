@@ -4,6 +4,8 @@ import { parseGoDaddy } from '../utils/parseGoDaddy'
 import { reglesDefaut } from '../data/regles'
 import { regionsDefaut } from '../data/regions'
 import { phrasesDefaut } from '../data/phrases'
+import { useOutlook } from '../useOutlook'
+import { parseGoDaddy } from '../utils/parseGoDaddy'
 
 const emailsDemo = [
   { id:1, prenom:'Josée', nom:'Rhéaume', adresse:'537 rue Myriam', ville:'Québec', cp:'G1L', tel:'418-208-4216', email:'rheaume.josee@gmail.com', marque:'Frigidaire', appareil:'Lave-vaisselle', marqueRaw:'Lave-vaisselle Frigidaire modèle Gallery', description:'Message d\'erreur « Er ». Ne fonctionne plus depuis que le message s\'affiche.', pieceJointe:['image.jpg'], time:'14h22' },
@@ -31,6 +33,7 @@ export default function Courriels() {
   const [simResult, setSimResult] = useState(null)
   const [showSim, setShowSim] = useState(false)
   const [search, setSearch] = useState('')
+  const { account, courriels, loading, error, connecter, deconnecter } = useOutlook()
 
   const regles = reglesDefaut
   const regions = regionsDefaut
@@ -56,41 +59,38 @@ export default function Courriels() {
   return (
     <div>
 
-      {/* Titre + simulateur */}
-      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20 }}>
-        <h2 style={{ fontSize:22, fontWeight:800 }}>Courriels clients</h2>
-        <button onClick={() => setShowSim(!showSim)} style={{
-          fontSize:13, fontWeight:600, padding:'9px 18px', borderRadius:8,
-          border:'2px solid #E8A800', background: showSim ? '#E8A800' : '#fff',
-          color: showSim ? '#fff' : '#E8A800', cursor:'pointer'
-        }}>
-          {showSim ? '✕ Fermer' : '🧪 Tester un courriel GoDaddy'}
-        </button>
+   {/* Titre + boutons */}
+<div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20, flexWrap:'wrap', gap:10 }}>
+  <h2 style={{ fontSize:22, fontWeight:800 }}>Courriels clients</h2>
+  <div style={{ display:'flex', gap:10, alignItems:'center' }}>
+    {!account ? (
+      <button onClick={connecter} disabled={loading} style={{
+        fontSize:13, fontWeight:600, padding:'9px 18px', borderRadius:8,
+        border:'2px solid #0078D4', background:'#0078D4', color:'#fff', cursor:'pointer'
+      }}>
+        {loading ? 'Connexion...' : '📧 Connecter Outlook'}
+      </button>
+    ) : (
+      <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+        <span style={{ fontSize:12, color:'#2E7D32', fontWeight:600 }}>
+          ✅ {account.username}
+        </span>
+        <button onClick={deconnecter} style={{
+          fontSize:12, padding:'6px 12px', borderRadius:8,
+          border:'1px solid #ddd', background:'#fff', cursor:'pointer'
+        }}>Déconnecter</button>
       </div>
-
-      {/* Simulateur */}
-      {showSim && (
-        <div className="card" style={{ marginBottom:20, borderLeft:'4px solid #E8A800' }}>
-          <div className="card-title">Colle un courriel GoDaddy pour l'analyser</div>
-          <textarea style={{ width:'100%', height:120, marginBottom:10, fontSize:12 }}
-            placeholder="Colle le texte brut du courriel ici..."
-            value={rawEmail} onChange={e => setRawEmail(e.target.value)} />
-          <button className="btn btn-primary" onClick={simulate}>Analyser</button>
-          {simResult && (
-            <div style={{ marginTop:14, padding:14, background:'#F9F9F9', borderRadius:10, fontSize:12 }}>
-              <span style={{
-                fontSize:11, fontWeight:700, padding:'3px 10px', borderRadius:20,
-                background: simResult.cl.code==='green' ? '#2E7D32' : '#C62828', color:'#fff', marginRight:8
-              }}>{simResult.cl.label}</span>
-              <strong>{simResult.nom}</strong> — {simResult.marque} {simResult.appareil} — {simResult.ville}
-              <div style={{ marginTop:6, color:'#666' }}>{simResult.cl.reason}</div>
-              <div style={{ marginTop:10, whiteSpace:'pre-wrap', background:'#fff', padding:12, borderRadius:8, border:'1px solid #E0E0E0', lineHeight:1.7 }}>
-                {simResult.phrase}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+    )}
+    {error && <span style={{ fontSize:12, color:'#C62828' }}>{error}</span>}
+    <button onClick={() => setShowSim(!showSim)} style={{
+      fontSize:13, fontWeight:600, padding:'9px 18px', borderRadius:8,
+      border:'2px solid #E8A800', background: showSim ? '#E8A800' : '#fff',
+      color: showSim ? '#fff' : '#E8A800', cursor:'pointer'
+    }}>
+      {showSim ? '✕ Fermer' : '🧪 Tester GoDaddy'}
+    </button>
+  </div>
+</div>
 
       {/* Layout principal */}
       <div style={{ display:'flex', gap:16 }}>
