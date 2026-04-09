@@ -17,13 +17,20 @@ body {
   background: #E8A800;
   display: flex;
   align-items: center;
-  padding: 0 20px;
   height: 60px;
   position: sticky;
   top: 0;
   z-index: 100;
+  width: 100%;
 }
-
+.topbar-inner {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
 .app-title {
   font-size: 18px;
   font-weight: 700;
@@ -166,4 +173,31 @@ textarea:focus {
 h2 {
   color: #1a1a1a;
   font-weight: 700;
+}
+.tab {
+  padding: 0 20px;
+  height: 60px;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.80);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  white-space: nowrap;
+  transition: all 0.15s;
+  font-family: inherit;
+  letter-spacing: 0.2px;
+}
+
+.tab:hover {
+  color: #fff;
+  background: rgba(0,0,0,0.08);
+}
+
+.tab.active {
+  color: #ffffff;
+  border-bottom-color: #ffffff;
+  font-weight: 800;
+  font-size: 15px;
 }

@@ -20,19 +20,21 @@ export default function App() {
   return (
     <div className="app-container">
       <div className="topbar">
-        <div className="app-title">⚡ Monsieur Électro</div>
-        <div className="tabs">
-          {tabs.map(t => (
-            <button
-              key={t.id}
-              className={`tab ${activeTab === t.id ? 'active' : ''}`}
-              onClick={() => setActiveTab(t.id)}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-      </div>
+  <div className="topbar-inner">
+    <div className="app-title">⚡ Monsieur Électro</div>
+    <div className="tabs">
+      {tabs.map(t => (
+        <button
+          key={t.id}
+          className={`tab ${activeTab === t.id ? 'active' : ''}`}
+          onClick={() => setActiveTab(t.id)}
+        >
+          {t.label}
+        </button>
+      ))}
+    </div>
+  </div>
+</div>
       <div className="page-content">
         {activeTab === 'courriels' && <Courriels />}
         {activeTab === 'calendrier' && <Calendrier />}

@@ -44,7 +44,7 @@ export default function Regles() {
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 600 }}>Règles de réparation</h2>
+        <h2 style={{ fontSize: 22, fontWeight: 700 }}>Règles de réparation</h2>
         <button className="btn btn-primary" onClick={save}>
           {saved ? '✓ Enregistré!' : 'Enregistrer'}
         </button>

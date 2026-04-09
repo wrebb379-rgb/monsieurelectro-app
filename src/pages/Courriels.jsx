@@ -47,125 +47,189 @@ export default function Courriels() {
     setSimResult({ ...parsed, cl: cl2, phrase: fillPrenom(phrases[cl2.phraseKey], parsed.prenom) })
   }
 
-  const badgeClass = (code) =>
-    code === 'green' ? 'badge badge-green' :
-    code === 'yellow' ? 'badge badge-yellow' : 'badge badge-red'
+  const badgeStyle = (code) => ({
+    fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 20,
+    background: code==='green' ? '#E8F5E9' : code==='yellow' ? '#FFF8E1' : '#FFEBEE',
+    color: code==='green' ? '#2E7D32' : code==='yellow' ? '#E65100' : '#C62828',
+  })
 
   return (
     <div>
-      <div style={{ display:'flex', gap:12, marginBottom:16, alignItems:'center' }}>
-        <h2 style={{ fontSize:16, fontWeight:600 }}>Courriels clients</h2>
-        <button className="btn" onClick={() => setShowSim(!showSim)}>
-          {showSim ? 'Masquer le simulateur' : '🧪 Tester un courriel GoDaddy'}
+
+      {/* Titre + bouton simulateur */}
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20 }}>
+        <h2 style={{ fontSize:22, fontWeight:800, color:'#1a1a1a' }}>Courriels clients</h2>
+        <button
+          onClick={() => setShowSim(!showSim)}
+          style={{ fontSize:13, fontWeight:600, padding:'9px 18px', borderRadius:8, border:'2px solid #E8A800', background: showSim ? '#E8A800' : '#fff', color: showSim ? '#fff' : '#E8A800', cursor:'pointer' }}>
+          {showSim ? '✕ Fermer le simulateur' : '🧪 Tester un courriel GoDaddy'}
         </button>
       </div>
 
+      {/* Simulateur */}
       {showSim && (
-        <div className="card" style={{ marginBottom:16 }}>
+        <div className="card" style={{ marginBottom:20, borderLeft:'4px solid #E8A800' }}>
           <div className="card-title">Colle un courriel GoDaddy pour l'analyser</div>
-          <textarea style={{ width:'100%', height:120, marginBottom:8 }} placeholder="Colle le texte brut ici..." value={rawEmail} onChange={e => setRawEmail(e.target.value)} />
+          <textarea style={{ width:'100%', height:120, marginBottom:10, fontSize:12 }}
+            placeholder="Colle le texte brut du courriel ici..."
+            value={rawEmail} onChange={e => setRawEmail(e.target.value)} />
           <button className="btn btn-primary" onClick={simulate}>Analyser</button>
           {simResult && (
-            <div style={{ marginTop:12, padding:12, background:'#f9f9f9', borderRadius:8, fontSize:12 }}>
-              <span className={badgeClass(simResult.cl.code)} style={{ marginRight:8 }}>{simResult.cl.label}</span>
-              <strong>{simResult.nom}</strong> — {simResult.marque} {simResult.appareil} — {simResult.ville}
+            <div style={{ marginTop:14, padding:14, background:'#F9F9F9', borderRadius:10, fontSize:12 }}>
+              <span style={badgeStyle(simResult.cl.code)}>{simResult.cl.label}</span>
+              <span style={{ marginLeft:10, fontWeight:700 }}>{simResult.nom}</span>
+              <span style={{ color:'#666' }}> — {simResult.marque} {simResult.appareil} — {simResult.ville}</span>
               <div style={{ marginTop:6, color:'#666' }}>{simResult.cl.reason}</div>
-              <div style={{ marginTop:8, whiteSpace:'pre-wrap', background:'#fff', padding:10, borderRadius:6, border:'1px solid #eee' }}>{simResult.phrase}</div>
+              <div style={{ marginTop:10, whiteSpace:'pre-wrap', background:'#fff', padding:12, borderRadius:8, border:'1px solid #E0E0E0', lineHeight:1.7 }}>
+                {simResult.phrase}
+              </div>
             </div>
           )}
         </div>
       )}
 
-      <div style={{ display:'flex', border:'1px solid #e0e0e0', borderRadius:10, overflow:'hidden', minHeight:500 }}>
+      {/* Layout principal */}
+      <div style={{ display:'flex', gap:16 }}>
 
-        {/* Sidebar */}
-        <div style={{ width:240, borderRight:'1px solid #e0e0e0', overflowY:'auto' }}>
+        {/* Sidebar — liste des courriels */}
+        <div style={{ width:260, flexShrink:0, display:'flex', flexDirection:'column', gap:8 }}>
           {emailsDemo.map(e => {
             const c = classifier(e, regles, regions)
+            const isActive = e.id === activeId
             return (
-              <div key={e.id} onClick={() => { setActiveId(e.id); setPreview(null) }}
-                style={{ padding:'10px 14px', borderBottom:'1px solid #f0f0f0', cursor:'pointer',
-                  background: e.id === activeId ? '#f0faf5' : '#fff',
-                  borderLeft: e.id === activeId ? '3px solid #1D9E75' : '3px solid transparent' }}>
-                <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:3 }}>
-                  <span className={badgeClass(c.code)}>{c.label}</span>
-                  <span style={{ fontSize:12, fontWeight:500, flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-                    {e.prenom} {e.nom.split(' ').slice(-1)[0]}
-                  </span>
-                  {e.pieceJointe.length > 0 && <span style={{ fontSize:12 }}>📎</span>}
+              <div key={e.id}
+                onClick={() => { setActiveId(e.id); setPreview(null) }}
+                style={{
+                  background: isActive ? '#fff' : '#fff',
+                  border: isActive ? '2px solid #E8A800' : '2px solid transparent',
+                  borderRadius: 10,
+                  padding: '12px 14px',
+                  cursor: 'pointer',
+                  boxShadow: isActive ? '0 2px 12px rgba(232,168,0,0.2)' : '0 1px 4px rgba(0,0,0,0.08)',
+                  transition: 'all 0.15s',
+                }}>
+                <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:6 }}>
+                  <span style={badgeStyle(c.code)}>{c.label}</span>
+                  {e.pieceJointe.length > 0 && <span style={{ fontSize:13 }}>📎</span>}
                 </div>
-                <div style={{ fontSize:11, color:'#888' }}>{e.marque} · {e.appareil}</div>
-                <div style={{ fontSize:11, color:'#aaa' }}>{e.ville} · {e.time}</div>
+                <div style={{ fontSize:14, fontWeight:700, color:'#1a1a1a', marginBottom:3 }}>
+                  {e.prenom} {e.nom.split(' ').slice(-1)[0]}
+                </div>
+                <div style={{ fontSize:12, color:'#666' }}>{e.marque} · {e.appareil}</div>
+                <div style={{ fontSize:11, color:'#aaa', marginTop:2 }}>{e.ville} · {e.time}</div>
               </div>
             )
           })}
         </div>
 
-        {/* Main */}
-        <div style={{ flex:1, display:'flex', flexDirection:'column' }}>
+        {/* Panel principal */}
+        <div style={{ flex:1, display:'flex', flexDirection:'column', gap:12 }}>
 
-          {/* Header */}
-          <div style={{ padding:'12px 16px', borderBottom:'1px solid #f0f0f0', display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
-            <div>
-              <div style={{ fontSize:14, fontWeight:600 }}>{email.prenom} {email.nom} — {email.appareil} {email.marque}</div>
-              <div style={{ fontSize:12, color:'#888', marginTop:2 }}>{email.email} · {email.tel} · {email.ville} · {email.time}</div>
+          {/* Entête client */}
+          <div style={{ background:'#fff', borderRadius:12, overflow:'hidden', boxShadow:'0 1px 4px rgba(0,0,0,0.08)' }}>
+            <div style={{ background:'#E8A800', padding:'16px 20px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+              <div>
+                <div style={{ fontSize:18, fontWeight:800, color:'#fff', marginBottom:4 }}>
+                  {email.prenom} {email.nom}
+                </div>
+                <div style={{ fontSize:13, color:'rgba(255,255,255,0.85)', display:'flex', gap:16, flexWrap:'wrap' }}>
+                  <span>📧 {email.email}</span>
+                  <span>📞 {email.tel}</span>
+                  <span>📍 {email.ville}</span>
+                  <span>🕐 {email.time}</span>
+                </div>
+              </div>
+              <span style={{ ...badgeStyle(cl.code), fontSize:13, padding:'6px 16px', background:'rgba(255,255,255,0.25)', color:'#fff', border:'2px solid rgba(255,255,255,0.5)' }}>
+                {cl.label}
+              </span>
             </div>
-            <span className={badgeClass(cl.code)}>{cl.label}</span>
-          </div>
 
-          {/* Body */}
-          <div style={{ padding:16, flex:1, overflowY:'auto' }}>
-            <div style={{ display:'flex', gap:8, flexWrap:'wrap', marginBottom:12 }}>
-              {[['Marque',email.marque],['Appareil',email.appareil],['Ville',email.ville],['Tél',email.tel]].map(([k,v]) => (
-                <span key={k} style={{ fontSize:11, padding:'3px 9px', borderRadius:20, background:'#f5f5f5', border:'1px solid #e0e0e0', color:'#555' }}>{k}: {v}</span>
+            {/* Infos appareil */}
+            <div style={{ padding:'14px 20px', borderBottom:'1px solid #F5F5F5', display:'flex', gap:10, flexWrap:'wrap' }}>
+              {[['🔧 Marque', email.marque], ['🏠 Appareil', email.appareil], ['📍 Ville', email.ville], ['📞 Tél', email.tel]].map(([k,v]) => (
+                <div key={k} style={{ background:'#F5F5F5', borderRadius:8, padding:'6px 12px' }}>
+                  <div style={{ fontSize:10, color:'#999', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.5px' }}>{k}</div>
+                  <div style={{ fontSize:13, fontWeight:700, color:'#1a1a1a' }}>{v}</div>
+                </div>
               ))}
             </div>
-            <div style={{ fontSize:12, color:'#444', lineHeight:1.7, background:'#f9f9f9', padding:'10px 14px', borderRadius:8, marginBottom:10 }}>
-              <div style={{ fontSize:11, color:'#aaa', marginBottom:4 }}>Modèle: {email.marqueRaw}</div>
-              {email.description}
-            </div>
-            {email.pieceJointe.map(f => (
-              <div key={f} style={{ display:'flex', alignItems:'center', gap:10, padding:'8px 12px', background:'#f9f9f9', borderRadius:8, border:'1px solid #e0e0e0', marginBottom:6, fontSize:12 }}>
-                <span style={{ fontSize:20 }}>{fileIcon(f)}</span>
-                <div><div style={{ fontWeight:500 }}>{f}</div><div style={{ fontSize:11, color:'#aaa' }}>Pièce jointe</div></div>
+
+            {/* Description */}
+            <div style={{ padding:'14px 20px' }}>
+              <div style={{ fontSize:11, color:'#aaa', fontWeight:600, marginBottom:4, textTransform:'uppercase', letterSpacing:'0.5px' }}>
+                Modèle : {email.marqueRaw}
               </div>
-            ))}
-            <div style={{ padding:'8px 12px', borderRadius:8, fontSize:12, marginTop:8,
-              background: cl.code==='green' ? '#E1F5EE' : cl.code==='yellow' ? '#FAEEDA' : '#FCEBEB',
-              color: cl.code==='green' ? '#0F6E56' : cl.code==='yellow' ? '#854F0B' : '#A32D2D',
-              border: `1px solid ${cl.code==='green' ? '#9FE1CB' : cl.code==='yellow' ? '#FAC775' : '#F7C1C1'}` }}>
-              {cl.reason}
+              <div style={{ fontSize:14, color:'#333', lineHeight:1.7 }}>
+                {email.description}
+              </div>
+
+              {/* Pièces jointes */}
+              {email.pieceJointe.map(f => (
+                <div key={f} style={{ display:'flex', alignItems:'center', gap:12, marginTop:10, padding:'10px 14px', background:'#F9F9F9', borderRadius:8, border:'1px solid #E0E0E0' }}>
+                  <span style={{ fontSize:24 }}>{fileIcon(f)}</span>
+                  <div>
+                    <div style={{ fontSize:13, fontWeight:700 }}>{f}</div>
+                    <div style={{ fontSize:11, color:'#aaa' }}>Pièce jointe</div>
+                  </div>
+                </div>
+              ))}
+
+              {/* Analyse */}
+              <div style={{
+                marginTop:12, padding:'10px 14px', borderRadius:8, fontSize:13, fontWeight:500,
+                background: cl.code==='green' ? '#E8F5E9' : cl.code==='yellow' ? '#FFF8E1' : '#FFEBEE',
+                color: cl.code==='green' ? '#2E7D32' : cl.code==='yellow' ? '#E65100' : '#C62828',
+                borderLeft: `4px solid ${cl.code==='green' ? '#2E7D32' : cl.code==='yellow' ? '#E65100' : '#C62828'}`,
+              }}>
+                {cl.code==='green' ? '✅' : cl.code==='yellow' ? '⚠️' : '❌'} {cl.reason}
+              </div>
             </div>
           </div>
 
           {/* Zone de réponse */}
-          <div style={{ borderTop:'1px solid #f0f0f0', padding:'12px 16px' }}>
+          <div style={{ background:'#fff', borderRadius:12, padding:'16px 20px', boxShadow:'0 1px 4px rgba(0,0,0,0.08)' }}>
 
-            <div style={{ fontSize:11, color:'#1D9E75', fontWeight:500, marginBottom:6 }}>★ Suggéré par tes règles</div>
-            <div style={{ display:'flex', gap:8, flexWrap:'wrap', marginBottom:14, paddingBottom:12, borderBottom:'1px solid #f0f0f0' }}>
-              {cl.code==='green' && <button className="btn btn-primary" onClick={() => handlePreview('prendre')}>✓ Confirmer RDV</button>}
-              {cl.code==='yellow' && <button className="btn btn-primary" onClick={() => handlePreview('prendre')}>✓ Je prends le dossier</button>}
-              {cl.code==='red' && cl.phraseKey==='secteur' && <button className="btn btn-danger" onClick={() => handlePreview('secteur')}>✓ Hors secteur</button>}
-              {cl.code==='red' && cl.phraseKey==='appareil' && <button className="btn btn-danger" onClick={() => handlePreview('appareil')}>✓ Appareil non réparé</button>}
-              {cl.code==='red' && cl.phraseKey==='marque' && <button className="btn btn-danger" onClick={() => handlePreview('marque')}>✓ Marque non couverte</button>}
+            {/* Suggéré */}
+            <div style={{ marginBottom:14, paddingBottom:14, borderBottom:'1px solid #F5F5F5' }}>
+              <div style={{ fontSize:11, fontWeight:700, color:'#E8A800', textTransform:'uppercase', letterSpacing:'0.5px', marginBottom:8 }}>
+                ★ Suggéré par tes règles
+              </div>
+              <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+                {cl.code==='green' && <button className="btn btn-primary" onClick={() => handlePreview('prendre')}>✓ Confirmer le RDV</button>}
+                {cl.code==='yellow' && <button className="btn btn-primary" onClick={() => handlePreview('prendre')}>✓ Je prends le dossier</button>}
+                {cl.code==='red' && cl.phraseKey==='secteur' && <button className="btn btn-danger" onClick={() => handlePreview('secteur')}>✓ Hors secteur</button>}
+                {cl.code==='red' && cl.phraseKey==='appareil' && <button className="btn btn-danger" onClick={() => handlePreview('appareil')}>✓ Appareil non réparé</button>}
+                {cl.code==='red' && cl.phraseKey==='marque' && <button className="btn btn-danger" onClick={() => handlePreview('marque')}>✓ Marque non couverte</button>}
+              </div>
             </div>
 
-            <div style={{ fontSize:11, color:'#aaa', marginBottom:6 }}>Toutes les réponses disponibles</div>
-            <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
-              <button className="btn btn-primary" onClick={() => handlePreview('prendre')}>Je prends le dossier</button>
-              <button className="btn" onClick={() => handlePreview('info')}>Demander plus d'info</button>
-              <button className="btn btn-danger" onClick={() => handlePreview('secteur')}>Hors secteur</button>
-              <button className="btn btn-danger" onClick={() => handlePreview('marque')}>Marque non couverte</button>
-              <button className="btn btn-danger" onClick={() => handlePreview('appareil')}>Appareil non réparé</button>
+            {/* Toutes les réponses */}
+            <div>
+              <div style={{ fontSize:11, fontWeight:700, color:'#999', textTransform:'uppercase', letterSpacing:'0.5px', marginBottom:8 }}>
+                Toutes les réponses disponibles
+              </div>
+              <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+                <button className="btn btn-primary" onClick={() => handlePreview('prendre')}>Je prends le dossier</button>
+                <button className="btn" onClick={() => handlePreview('info')}>Demander plus d'info</button>
+                <button className="btn btn-danger" onClick={() => handlePreview('secteur')}>Hors secteur</button>
+                <button className="btn btn-danger" onClick={() => handlePreview('marque')}>Marque non couverte</button>
+                <button className="btn btn-danger" onClick={() => handlePreview('appareil')}>Appareil non réparé</button>
+              </div>
             </div>
 
+            {/* Aperçu de la réponse */}
             {preview && (
-              <div style={{ marginTop:10 }}>
-                <div style={{ fontSize:12, whiteSpace:'pre-wrap', lineHeight:1.7, background:'#f9f9f9', padding:'10px 12px', borderRadius:8, border:'1px solid #e0e0e0', color:'#555' }}>
+              <div style={{ marginTop:16, borderTop:'1px solid #F5F5F5', paddingTop:16 }}>
+                <div style={{ fontSize:11, fontWeight:700, color:'#999', textTransform:'uppercase', letterSpacing:'0.5px', marginBottom:8 }}>
+                  Aperçu du message
+                </div>
+                <div style={{ fontSize:13, whiteSpace:'pre-wrap', lineHeight:1.8, background:'#F9F9F9', padding:'14px 16px', borderRadius:8, border:'1px solid #E0E0E0', color:'#333' }}>
                   {preview.text}
                 </div>
-                <div style={{ display:'flex', gap:8, marginTop:8 }}>
-                  <button className="btn btn-primary" onClick={() => alert('Envoie à ' + email.email)}>Envoyer à {email.email}</button>
+                <div style={{ display:'flex', gap:10, marginTop:12 }}>
+                  <button className="btn btn-primary" onClick={() => alert('Envoie à ' + email.email)}>
+                    📤 Envoyer à {email.email}
+                  </button>
                   <button className="btn" onClick={() => setPreview(null)}>Annuler</button>
                 </div>
               </div>

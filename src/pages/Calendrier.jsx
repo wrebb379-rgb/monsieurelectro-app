@@ -112,7 +112,7 @@ export default function Calendrier() {
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
-        <h2 style={{ fontSize: 16, fontWeight: 600 }}>Calendrier</h2>
+        <h2 style={{ fontSize: 22, fontWeight: 700 }}>Calendrier</h2>
         <div style={{ display: 'flex', gap: 4 }}>
           <button className={`btn ${vue === 'mois' ? 'btn-primary' : ''}`} onClick={() => setVue('mois')}>Mois</button>
           <button className={`btn ${vue === 'semaine' ? 'btn-primary' : ''}`} onClick={() => setVue('semaine')}>Semaine</button>
