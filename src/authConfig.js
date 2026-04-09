@@ -3,15 +3,20 @@ export const msalConfig = {
     clientId: '9445d18c-ef16-479a-be00-0846553b5dba',
     authority: 'https://login.microsoftonline.com/common',
     redirectUri: window.location.origin,
+    navigateToLoginRequestUrl: false,
   },
   cache: {
-    cacheLocation: 'sessionStorage',
-    storeAuthStateInCookie: false,
+    cacheLocation: 'localStorage',
+    storeAuthStateInCookie: true,
   },
+  system: {
+    allowNativeBroker: false,
+  }
 }
 
 export const loginRequest = {
-  scopes: ['Mail.Read', 'User.Read'],
+  scopes: ['openid', 'profile', 'email', 'Mail.Read', 'User.Read'],
+  prompt: 'select_account',
 }
 
 export const mailRequest = {
