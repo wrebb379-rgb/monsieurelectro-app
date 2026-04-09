@@ -1,10 +1,44 @@
 export function parseGoDaddy(raw, regles = []) {
   if (!raw) return vide()
 
-  const text = raw
+  // ✅ Normaliser : forcer un \n avant chaque label connu
+  const labels = [
+    'Nom',
+    'Adresse complète',
+    'Adresse',
+    'Ville',
+    'Votre téléphone',
+    'Votre telephone',
+    'Téléphone',
+    'Telephone',
+    'Email',
+    'Courriel',
+    'Marque et numéro de modèle de l\'appareil',
+    'Marque et numero de modele de l\'appareil',
+    'Marque et numéro de modèle',
+    'Marque et modèle',
+    'Marque',
+    'Description du problème',
+    'Description du probleme',
+    'Pièces jointes',
+    'Pieces jointes',
+    'Périphérique',
+    'Peripherique',
+    'Langue',
+    'Envoyé depuis',
+    'Envoye depuis',
+  ]
+
+  let text = raw
     .replace(/\r\n/g, '\n')
     .replace(/\r/g, '\n')
     .replace(/\t/g, ' ')
+
+  // ✅ Injecter un \n avant chaque label connu (même s'il est collé à la fin d'une autre ligne)
+  for (const label of labels) {
+    const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    text = text.replace(new RegExp('([^\\n])(' + escaped + ')', 'g'), '$1\n$2')
+  }
 
   function champ(label) {
     const re = new RegExp(
@@ -41,7 +75,6 @@ export function parseGoDaddy(raw, regles = []) {
 
   const nom = (champ('Nom') || champLigne('Nom') || '').trim()
 
-  // ✅ CORRIGÉ : prenom calculé ici
   const prenomBrut = nom.split(' ')[0] || 'Client'
   const prenom = prenomBrut.charAt(0).toUpperCase() + prenomBrut.slice(1).toLowerCase()
 
@@ -83,7 +116,6 @@ export function parseGoDaddy(raw, regles = []) {
   const marque = detectMarque(marqueRaw + ' ' + description, regles)
   const appareil = detectAppareil(marqueRaw + ' ' + description)
 
-  // ✅ CORRIGÉ : prenom inclus dans le return
   return { nom, prenom, adresse, ville, cp, tel, email, marqueRaw, marque, appareil, description, pieceJointe }
 }
 
