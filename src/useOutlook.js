@@ -87,14 +87,16 @@ export function useOutlook() {
         return
       }
 
-      const filtered = (data.value || []).filter(function(m) {
-        const bodyTexte = stripHtml(m.body ? m.body.content : '')
-        return (
-          (m.subject && m.subject.includes('Monsieur Electro')) ||
-          (m.bodyPreview && m.bodyPreview.includes('Monsieur Electro')) ||
-          bodyTexte.includes('Monsieur Electro')
-        )
-      })
+    const filtered = (data.value || []).filter(function(m) {
+  const bodyTexte = stripHtml(m.body ? m.body.content : '')
+  const estFormulaire = bodyTexte.includes('Monsieur Electro Services Inc. a reçu un nouveau message')
+  const estReply = m.subject && (
+    m.subject.toLowerCase().startsWith('re:') ||
+    m.subject.toLowerCase().startsWith('rép:') ||
+    m.subject.toLowerCase().startsWith('réponse:')
+  )
+  return estFormulaire && !estReply
+})
 
       const enriched = filtered.map(function(m) {
         return {
