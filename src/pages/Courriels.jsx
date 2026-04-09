@@ -5,7 +5,7 @@ import { reglesDefaut } from '../data/regles'
 import { regionsDefaut } from '../data/regions'
 import { phrasesDefaut } from '../data/phrases'
 import { useOutlook } from '../useOutlook'
-import { parseGoDaddy } from '../utils/parseGoDaddy'
+
 
 const emailsDemo = [
   { id:1, prenom:'Josée', nom:'Rhéaume', adresse:'537 rue Myriam', ville:'Québec', cp:'G1L', tel:'418-208-4216', email:'rheaume.josee@gmail.com', marque:'Frigidaire', appareil:'Lave-vaisselle', marqueRaw:'Lave-vaisselle Frigidaire modèle Gallery', description:'Message d\'erreur « Er ». Ne fonctionne plus depuis que le message s\'affiche.', pieceJointe:['image.jpg'], time:'14h22' },
