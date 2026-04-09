@@ -50,7 +50,7 @@ const parsed = parseGoDaddy(body, regles)
           ville: parsed.ville || '',
           cp: parsed.cp || '',
           tel: parsed.tel || '',
-          email: m.from ? m.from.emailAddress.address : '',
+          email: parsed.email || (m.from ? m.from.emailAddress.address : ''),
           marque: parsed.marque || '',
           appareil: parsed.appareil || '',
           marqueRaw: parsed.marqueRaw || m.subject || '',

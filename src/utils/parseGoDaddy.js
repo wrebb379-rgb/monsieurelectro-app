@@ -15,6 +15,16 @@ export function parseGoDaddy(raw, regles = []) {
     return m ? m[1].trim() : ''
   }
 
+  // ✅ NOUVEAU : champ sur la même ligne (label + valeur collés)
+  function champLigne(label) {
+    const re = new RegExp(
+      '(?:^|\\n)' + label + '[ \\t]+([^\\n]{1,300})',
+      'i'
+    )
+    const m = text.match(re)
+    return m ? m[1].trim() : ''
+  }
+
   function bloc(labelDebut, labelsFin) {
     const re = new RegExp(
       '(?:^|\\n)' + labelDebut + '[^\\n]*\\n([\\s\\S]{1,1000})',
@@ -30,23 +40,35 @@ export function parseGoDaddy(raw, regles = []) {
     return contenu.trim()
   }
 
-  const nom = champ('Nom') || ''
+  const nom = champ('Nom') || champLigne('Nom') || ''
   const prenomBrut = nom.split(' ')[0] || 'Client'
   const prenom = prenomBrut.charAt(0).toUpperCase() + prenomBrut.slice(1).toLowerCase()
 
-  const adresse = champ('Adresse complète') || champ('Adresse') || ''
-  const ville = champ('Ville') || ''
-  const tel = champ('Votre téléphone') || champ('téléphone') || champ('Téléphone') || ''
-  const email = champ('Email') || champ('Courriel') || ''
+  const adresse = champ('Adresse compl.+te') || champLigne('Adresse compl.+te') ||
+                  champ('Adresse') || champLigne('Adresse') || ''
 
-  const marqueRaw = champ('Marque et numéro de modèle de l\'appareil') ||
-                    champ('Marque et numéro de modèle') ||
-                    champ('Marque et modèle') ||
-                    champ('Marque') || ''
+  const ville = champ('Ville') || champLigne('Ville') || ''
+
+  // ✅ CORRIGÉ : toutes les variantes de "téléphone" avec/sans accent
+  const tel = champ('Votre t.+l.+phone') || champLigne('Votre t.+l.+phone') ||
+              champ('T.+l.+phone') || champLigne('T.+l.+phone') ||
+              champ('Phone') || champLigne('Phone') || ''
+
+  // ✅ CORRIGÉ : email du client dans le corps, pas l'expéditeur GoDaddy
+  const email = champ('Email') || champLigne('Email') ||
+                champ('Courriel') || champLigne('Courriel') ||
+                champ('E-mail') || champLigne('E-mail') || ''
+
+  const marqueRaw = champ('Marque et num.+ro de mod.+le de l\'appareil') ||
+                    champLigne('Marque et num.+ro de mod.+le de l\'appareil') ||
+                    champ('Marque et num.+ro de mod.+le') ||
+                    champLigne('Marque et num.+ro de mod.+le') ||
+                    champ('Marque et mod.+le') || champLigne('Marque et mod.+le') ||
+                    champ('Marque') || champLigne('Marque') || ''
 
   const description = bloc(
-    'Description du problème[^\\n]*',
-    ['Pièces jointes', 'Périphérique', 'Langue', 'Envoyé', 'Device', 'Platform']
+    'Description du probl.+me[^\\n]*',
+    ['Pi.+ces jointes', 'P.+riph.+rique', 'Langue', 'Envoy.+', 'Device', 'Platform']
   )
 
   const pieceJointe = (() => {

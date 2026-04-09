@@ -3,10 +3,18 @@ export function classifier(email, regles, regions) {
 
   const appareils = ['Laveuse','Sécheuse','Réfrigérateur','Congélateur','Lave-vaisselle','Cuisinière']
 
+  
+function normaliser(str) {
+    return (str || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // enlève les accents
+  }
+
   const regionOk = regions.some(r => {
-    const rl = r.toLowerCase()
-    const ville = (email.ville || '').toLowerCase()
-    const cp = (email.cp || '').toLowerCase()
+    const rl = normaliser(r)
+    const ville = normaliser(email.ville)
+    const cp = normaliser(email.cp)
     return ville.includes(rl) || rl.includes(ville) || cp.startsWith(rl)
   })
 
